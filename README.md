@@ -18,11 +18,10 @@ O Mercato é uma lista de compras compartilhada com a família, organizada pelos
 
 ## Modo demonstração
 
-Abra o app com `?demo` no endereço para ver uma família de exemplo (Ana, Lucas e Bia) com listas, compras e histórico fictícios:
+**App no ar:** [mercato-psi.vercel.app](https://mercato-psi.vercel.app)
 
-```
-https://SEU-ENDERECO/?demo
-```
+Abra com `?demo` para ver uma família de exemplo (Ana, Lucas e Bia) com listas, compras e histórico fictícios:
+[mercato-psi.vercel.app/?demo](https://mercato-psi.vercel.app/?demo)
 
 ## Tecnologia
 
