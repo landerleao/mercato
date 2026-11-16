@@ -1,6 +1,6 @@
 /* Mercato — funciona offline (no mercado o sinal costuma cair) */
-const VERSAO = 'mercato-v3';
-const BASE = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/store.js', 'js/catalogo.js', 'js/nuvem.js', 'js/config.js', 'js/vendor/supabase-2.117.3.js', 'manifest.webmanifest',
+const VERSAO = 'mercato-v4';
+const BASE = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/store.js', 'js/catalogo.js', 'js/nuvem.js', 'js/config.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSAO).then(c => c.addAll(BASE)).then(() => self.skipWaiting())); });
@@ -13,7 +13,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   const externo = url.origin !== location.origin;
   // fontes e ícones (CDN): usa o cache e atualiza em segundo plano
-  if (externo && /fonts\.(googleapis|gstatic)\.com|cdn\.jsdelivr\.net/.test(url.host)) {
+  if (externo && /fonts\.(googleapis|gstatic)\.com|cdn\.jsdelivr\.net|www\.gstatic\.com/.test(url.host)) {
     e.respondWith(caches.open(VERSAO).then(async c => {
       const hit = await c.match(req);
       const rede = fetch(req).then(r => { if (r.ok || r.type === 'opaque') c.put(req, r.clone()); return r; }).catch(() => hit);

@@ -629,11 +629,10 @@ function aviso(titulo, texto, icone = 'ti-mail') {
 const FORMS_CONTA = {
   fCadastro: async fd => {
     const r = await N.cadastrar(fd.email.trim(), fd.senha, fd.nome.trim());
-    if (r.session) { sessao = r.session; fechar(); await carregarCasa(); }
-    else aviso('Confirme seu e-mail', `Enviamos um link para <b>${esc(fd.email.trim())}</b>. Abra o e-mail, toque no link e depois entre com sua senha.`);
+    sessao = r.session; fechar(); await carregarCasa();
   },
   fLogin: async fd => { sessao = await N.entrar(fd.email.trim(), fd.senha); fechar(); await carregarCasa(); },
-  fEsqueci: async fd => { await N.recuperar(fd.email.trim()); aviso('Confira seu e-mail', `Se existir uma conta para <b>${esc(fd.email.trim())}</b>, o link para criar uma senha nova já está a caminho.`); },
+  fEsqueci: async fd => { await N.recuperar(fd.email.trim()); aviso('Confira seu e-mail', `Se existir uma conta para <b>${esc(fd.email.trim())}</b>, o link para criar uma senha nova já está a caminho. Olhe também a caixa de spam.`); },
   fNovaSenha: async fd => { await N.novaSenha(fd.senha); fechar(); toast('Senha alterada', 'ti-lock-check'); },
   fCasa: async fd => { await N.criarFamilia(fd.nome.trim(), nomeUsuario(), S.CORES_PESSOA[0]); await carregarCasa(); toast(`Casa <b>${esc(fd.nome.trim())}</b> criada`, 'ti-confetti'); },
   fCodigo: async fd => { const c = fd.c.trim().toUpperCase(); conviteNome = await N.infoConvite(c); await N.entrarFamilia(c, nomeUsuario(), corNova()); await carregarCasa(); toast(`Você entrou em <b>${esc(conviteNome || 'uma casa')}</b>`, 'ti-confetti'); },
@@ -657,9 +656,9 @@ async function iniciar() {
   if (qs.get('tema') && S.estado) { S.estado.tema = qs.get('tema'); S.salvar(); }
   render();                                          // abre na hora com o que está salvo no aparelho
   if (!N.ativo || demo) return;
+  try { await N.carregar(); } catch (e) { console.warn('Mercato: nuvem indisponível agora', e); if (S.estado?.modo === 'nuvem') render(); return; }
   S.usarSink(op => N.enfileirar(op));
   N.aoMudarStatus(atualizarChip);
-  N.sb.auth.onAuthStateChange((ev, s) => { if (ev === 'PASSWORD_RECOVERY') { sessao = s; setTimeout(sheetNovaSenha, 300); } });
   const conv = pegarConvite();
   if (conv) N.infoConvite(conv).then(n => { conviteNome = n; if (!sessao) render(); });
   try { sessao = await N.sessao(); } catch (e) {}

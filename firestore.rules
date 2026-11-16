@@ -1,0 +1,57 @@
+rules_version = '2';
+
+// Mercato · regras de segurança do Firestore
+// Cole tudo em Firestore Database → Regras → Publicar.
+// Cada pessoa só lê e grava os dados das casas (famílias) de que faz parte.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() { return request.auth != null; }
+    function eu() { return request.auth.uid; }
+    // membro da casa (leitura: estado atual / gravação: estado depois da gravação, para funcionar em lote)
+    function membroAgora(casaId) { return logado() && eu() in get(/databases/$(database)/documents/casas/$(casaId)).data.membrosIds; }
+    function membroDepois(casaId) { return logado() && eu() in getAfter(/databases/$(database)/documents/casas/$(casaId)).data.membrosIds; }
+    function texto(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
+
+    // Convite: quem tem o código descobre só o nome da casa e o id dela.
+    match /convites/{codigo} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if membroDepois(request.resource.data.casaId)
+                    && getAfter(/databases/$(database)/documents/casas/$(request.resource.data.casaId)).data.codigo == codigo;
+      allow update, delete: if false;
+    }
+
+    match /casas/{casaId} {
+      allow read: if logado() && eu() in resource.data.membrosIds;
+
+      allow create: if logado()
+                    && request.resource.data.criadaPor == eu()
+                    && request.resource.data.membrosIds == [eu()]
+                    && texto(request.resource.data.nome, 40);
+
+      // membros podem renomear a casa; quem tem o convite pode entrar (adicionar só a si mesmo)
+      allow update: if logado() && (
+          (eu() in resource.data.membrosIds
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome'])
+            && texto(request.resource.data.nome, 40))
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['membrosIds'])
+            && request.resource.data.membrosIds.hasAll(resource.data.membrosIds)
+            && request.resource.data.membrosIds.removeAll(resource.data.membrosIds).hasOnly([eu()]))
+      );
+      allow delete: if false;
+
+      match /membros/{uid} {
+        allow read: if membroAgora(casaId);
+        allow create, update: if uid == eu() && membroDepois(casaId) && texto(request.resource.data.nome, 40);
+        allow delete: if uid == eu();
+      }
+
+      match /listas/{id}    { allow read: if membroAgora(casaId); allow write: if membroDepois(casaId); }
+      match /itens/{id}     { allow read: if membroAgora(casaId); allow write: if membroDepois(casaId); }
+      match /compras/{id}   { allow read: if membroAgora(casaId); allow write: if membroDepois(casaId); }
+      match /historico/{id} { allow read: if membroAgora(casaId); allow write: if membroDepois(casaId); }
+    }
+  }
+}

@@ -1,6 +1,6 @@
-/* Mercato — conexão com o Supabase
-   Supabase → Project Settings → API Keys.
-   A chave "publishable" (sb_publishable_…) é pública por natureza: pode ficar no código.
-   Nunca coloque aqui a chave "secret" / service_role. */
-export const SUPABASE_URL = '';
-export const SUPABASE_KEY = '';
+/* Mercato — conexão com o Firebase
+   Firebase → Configurações do projeto → Seus apps → app da Web → "Configuração do SDK".
+   Esses dados são públicos por natureza (ficam no navegador de todo mundo): a segurança
+   vem das regras do Firestore (firestore.rules), não deles.
+   Deixe FIREBASE = null para usar só no aparelho / modo demonstração. */
+export const FIREBASE = null;

@@ -1,119 +1,197 @@
-/* Mercato — nuvem (Supabase): login, casa da família, fila offline e tempo real */
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+/* Mercato — nuvem (Firebase): login, casa da família, tempo real e offline
+   O Firestore guarda as alterações no aparelho quando está sem sinal e envia sozinho quando a internet volta. */
+import { FIREBASE } from './config.js';
 
-const lib = window.supabase;
-export const ativo = !!(SUPABASE_URL && SUPABASE_KEY && lib);
-export const sb = ativo ? lib.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }) : null;
-const base = () => location.origin + location.pathname;
+export const ativo = !!(FIREBASE && FIREBASE.apiKey && FIREBASE.projectId);
+const V = '10.12.2', CDN = `https://www.gstatic.com/firebasejs/${V}`;
+let A, F, auth, db, pronto = null;
+
+export function carregar() {
+  return pronto ||= (async () => {
+    const [app, a, f] = await Promise.all([import(`${CDN}/firebase-app.js`), import(`${CDN}/firebase-auth.js`), import(`${CDN}/firebase-firestore.js`)]);
+    A = a; F = f;
+    const inst = app.initializeApp(FIREBASE);
+    auth = a.initializeAuth(inst, { persistence: [a.indexedDBLocalPersistence, a.browserLocalPersistence] });
+    auth.languageCode = 'pt';
+    try { db = f.initializeFirestore(inst, { localCache: f.persistentLocalCache({ tabManager: f.persistentMultipleTabManager() }) }); }
+    catch (e) { db = f.getFirestore(inst); }
+  })().catch(e => { pronto = null; throw e; });
+}
 
 /* ---------- mensagens de erro em português ---------- */
 const MSG = [
-  [/Invalid login credentials/i, 'E-mail ou senha incorretos.'],
-  [/already registered|already been registered/i, 'Este e-mail já tem conta. Toque em “Já tenho conta”.'],
-  [/Email not confirmed/i, 'Confirme seu e-mail pelo link que enviamos e tente de novo.'],
-  [/Password should be at least|at least 6/i, 'A senha precisa ter pelo menos 6 caracteres.'],
-  [/Unable to validate email|invalid format|invalid email/i, 'Confira o e-mail digitado.'],
-  [/rate limit|too many/i, 'Muitas tentativas seguidas. Aguarde um minuto.'],
+  [/invalid-credential|wrong-password|user-not-found|invalid-login/i, 'E-mail ou senha incorretos.'],
+  [/email-already-in-use/i, 'Este e-mail já tem conta. Toque em “Já tenho conta”.'],
+  [/weak-password/i, 'A senha precisa ter pelo menos 6 caracteres.'],
+  [/invalid-email|missing-email/i, 'Confira o e-mail digitado.'],
+  [/too-many-requests/i, 'Muitas tentativas seguidas. Aguarde um minuto.'],
   [/Convite inválido/i, 'Código de convite inválido. Confira com quem te convidou.'],
-  [/fetch|network|Load failed/i, 'Sem conexão. Verifique a internet e tente de novo.'],
+  [/permission-denied|insufficient permissions/i, 'Sem permissão para isso. Entre de novo na sua conta.'],
+  [/network|offline|unavailable|fetch|Load failed|Failed to fetch|dynamically imported/i, 'Sem conexão. Verifique a internet e tente de novo.'],
 ];
-export const traduzir = e => { const m = e?.message || String(e || ''); return (MSG.find(([re]) => re.test(m)) || [, 'Algo deu errado. Tente de novo.'])[1]; };
+export const traduzir = e => { const m = `${e?.code || ''} ${e?.message || e || ''}`; return (MSG.find(([re]) => re.test(m)) || [, 'Algo deu errado. Tente de novo.'])[1]; };
 
 /* ---------- conta ---------- */
-export async function sessao() { const { data } = await sb.auth.getSession(); return data.session; }
-export async function cadastrar(email, senha, nome) {
-  const { data, error } = await sb.auth.signUp({ email, password: senha, options: { data: { nome }, emailRedirectTo: base() } });
-  if (error) throw error;
-  if (data.user && !data.user.identities?.length) throw new Error('already registered');
-  return data;
+const sess = u => u ? { user: { id: u.uid, email: u.email, user_metadata: { nome: u.displayName } } } : null;
+export async function sessao() {
+  await carregar();
+  if (auth.authStateReady) await auth.authStateReady();
+  else await new Promise(r => { const off = A.onAuthStateChanged(auth, () => { off(); r(); }); });
+  return sess(auth.currentUser);
 }
-export async function entrar(email, senha) { const { data, error } = await sb.auth.signInWithPassword({ email, password: senha }); if (error) throw error; return data.session; }
-export async function recuperar(email) { const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: base() }); if (error) throw error; }
-export async function novaSenha(senha) { const { error } = await sb.auth.updateUser({ password: senha }); if (error) throw error; }
-export async function sair() { desconectar(); fila = []; gravar(); try { localStorage.removeItem('mercato:casa'); } catch (e) {} await sb.auth.signOut(); }
+export async function cadastrar(email, senha, nome) {
+  await carregar();
+  const { user } = await A.createUserWithEmailAndPassword(auth, email, senha);
+  await A.updateProfile(user, { displayName: nome });
+  return { session: sess(auth.currentUser) };
+}
+export async function entrar(email, senha) { await carregar(); const { user } = await A.signInWithEmailAndPassword(auth, email, senha); return sess(user); }
+export async function recuperar(email) { await carregar(); await A.sendPasswordResetEmail(auth, email); }
+export async function novaSenha(senha) { await carregar(); await A.updatePassword(auth.currentUser, senha); }
+export async function sair() { desconectar(); try { localStorage.removeItem('mercato:casa'); } catch (e) {} await carregar(); await A.signOut(auth); }
 
 /* ---------- casa (família) ---------- */
+const casaDoc = fid => F.doc(db, 'casas', fid);
+const sub = (fid, nome) => F.collection(db, 'casas', fid, nome);
+const lembrar = fid => { try { localStorage.setItem('mercato:casa', fid); } catch (e) {} return fid; };
+async function minhasCasas(uid) { const q = await F.getDocs(F.query(F.collection(db, 'casas'), F.where('membrosIds', 'array-contains', uid))); return q.docs.map(d => d.id); }
 export async function minhaFamilia(uid) {
+  await carregar();
   let pref = null; try { pref = localStorage.getItem('mercato:casa'); } catch (e) {}
-  const { data, error } = await sb.from('membros').select('familia_id').eq('user_id', uid).order('entrou_em');
-  if (error) throw error;
-  const ids = data.map(x => x.familia_id);
+  const ids = await minhasCasas(uid);
   return ids.includes(pref) ? pref : ids[0] || null;
 }
-const lembrar = fid => { try { localStorage.setItem('mercato:casa', fid); } catch (e) {} return fid; };
-export async function criarFamilia(nomeCasa, nome, cor) { const { data, error } = await sb.rpc('criar_familia', { p_nome_familia: nomeCasa, p_nome: nome, p_cor: cor }); if (error) throw error; return lembrar(data); }
-export async function entrarFamilia(codigo, nome, cor) { const { data, error } = await sb.rpc('entrar_familia', { p_codigo: codigo, p_nome: nome, p_cor: cor }); if (error) throw error; return lembrar(data); }
-export async function infoConvite(codigo) { try { const { data } = await sb.rpc('info_convite', { p_codigo: codigo }); return data; } catch (e) { return null; } }
-
-/* ---------- baixar tudo da casa ---------- */
-const ms = d => +new Date(d);
-export async function puxar(fid, uid) {
-  const q = t => sb.from(t).select('*').eq('familia_id', fid);
-  const rs = await Promise.all([sb.from('familias').select('*').eq('id', fid).single(), q('membros'), q('listas').order('criada'), q('itens').order('quando'),
-    q('compras').order('data', { ascending: false }).limit(80), q('historico')]);
-  const erro = rs.find(r => r.error); if (erro) throw erro.error;
-  const [f, m, l, i, c, h] = rs.map(r => r.data);
-  const membros = m.sort((a, b) => (b.papel === 'dono') - (a.papel === 'dono') || ms(a.entrou_em) - ms(b.entrou_em)).map(x => ({ id: x.user_id, nome: x.nome, cor: x.cor, papel: x.papel }));
-  return {
-    versao: 1, modo: 'nuvem', demo: false,
-    eu: membros.find(x => x.id === uid) || { id: uid, nome: 'Você', cor: '#C9824A' },
-    familia: { id: fid, nome: f.nome, codigo: f.codigo, membros },
-    listas: l.map(x => ({ id: x.id, nome: x.nome, icone: x.icone, criada: ms(x.criada),
-      itens: i.filter(y => y.lista_id === x.id).map(y => ({ id: y.id, nome: y.nome, qtd: y.qtd, corredor: y.corredor, emoji: y.emoji, comprado: y.comprado,
-        preco: y.preco == null ? null : +y.preco, por: y.por, add: y.add, quando: ms(y.quando) })) })),
-    historico: Object.fromEntries(h.map(x => [x.chave, { nome: x.nome, emoji: x.emoji, corredor: x.corredor, qtd: x.qtd, n: x.n }])),
-    compras: c.map(x => ({ id: x.id, data: ms(x.data), lista: x.lista, total: +x.total, qtd: x.qtd })),
-  };
+const LETRAS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const novoCodigo = () => Array.from(crypto.getRandomValues(new Uint8Array(6)), b => LETRAS[b % LETRAS.length]).join('');
+export async function criarFamilia(nomeCasa, nome, cor) {
+  await carregar();
+  const uid = auth.currentUser.uid, agora = Date.now();
+  let codigo; do { codigo = novoCodigo(); } while ((await F.getDoc(F.doc(db, 'convites', codigo))).exists());
+  const casa = F.doc(F.collection(db, 'casas')), lista = F.doc(sub(casa.id, 'listas'));
+  const b = F.writeBatch(db);
+  b.set(casa, { nome: nomeCasa || 'Nossa casa', codigo, criadaPor: uid, criadaEm: agora, membrosIds: [uid] });
+  b.set(F.doc(db, 'convites', codigo), { casaId: casa.id, nome: nomeCasa || 'Nossa casa' });
+  b.set(F.doc(db, 'casas', casa.id, 'membros', uid), { nome, cor, papel: 'dono', entrouEm: agora });
+  b.set(lista, { nome: 'Compra do mês', icone: 'ti-shopping-cart', criada: agora });
+  await b.commit();
+  return lembrar(casa.id);
+}
+export async function entrarFamilia(codigo, nome, cor) {
+  await carregar();
+  const uid = auth.currentUser.uid;
+  const c = await F.getDoc(F.doc(db, 'convites', (codigo || '').trim().toUpperCase()));
+  if (!c.exists()) throw new Error('Convite inválido');
+  const fid = c.data().casaId;
+  if ((await minhasCasas(uid)).includes(fid)) return lembrar(fid);
+  const b = F.writeBatch(db);
+  b.update(casaDoc(fid), { membrosIds: F.arrayUnion(uid) });
+  b.set(F.doc(db, 'casas', fid, 'membros', uid), { nome, cor, papel: 'membro', entrouEm: Date.now() });
+  await b.commit();
+  return lembrar(fid);
+}
+export async function infoConvite(codigo) {
+  try { await carregar(); const c = await F.getDoc(F.doc(db, 'convites', (codigo || '').trim().toUpperCase())); return c.exists() ? c.data().nome : null; }
+  catch (e) { return null; }
 }
 
-/* ---------- fila de alterações (funciona offline) ---------- */
-const CHAVE_FILA = 'mercato:fila';
-let fila = (() => { try { return JSON.parse(localStorage.getItem(CHAVE_FILA)) || []; } catch (e) { return []; } })();
-let enviando = false, falhou = false;
+/* ---------- montar o estado do app a partir dos documentos ---------- */
+function montar(fid, uid, casa, membros, listas, itens, compras, historico) {
+  const ms = membros.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.papel === 'dono') - (a.papel === 'dono') || (a.entrouEm || 0) - (b.entrouEm || 0))
+    .map(x => ({ id: x.id, nome: x.nome, cor: x.cor, papel: x.papel }));
+  const its = itens.map(d => ({ id: d.id, ...d.data() }));
+  return {
+    versao: 1, modo: 'nuvem', demo: false,
+    eu: ms.find(x => x.id === uid) || { id: uid, nome: auth.currentUser?.displayName || 'Você', cor: '#C9824A' },
+    familia: { id: fid, nome: casa?.nome || 'Nossa casa', codigo: casa?.codigo || '', membros: ms },
+    listas: listas.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.criada - b.criada).map(l => ({ id: l.id, nome: l.nome, icone: l.icone, criada: l.criada,
+      itens: its.filter(i => i.listaId === l.id).sort((a, b) => a.quando - b.quando).map(i => ({ id: i.id, nome: i.nome, qtd: i.qtd, corredor: i.corredor, emoji: i.emoji,
+        comprado: !!i.comprado, preco: i.preco ?? null, por: i.por ?? null, add: i.add ?? null, quando: i.quando })) })),
+    historico: Object.fromEntries(historico.map(d => { const h = d.data(); return [h.chave || d.id, { nome: h.nome, emoji: h.emoji, corredor: h.corredor, qtd: h.qtd, n: h.n }]; })),
+    compras: compras.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.data - a.data),
+  };
+}
+export async function puxar(fid, uid) {
+  await carregar();
+  const [c, ...rs] = await Promise.all([F.getDoc(casaDoc(fid)), F.getDocs(sub(fid, 'membros')), F.getDocs(sub(fid, 'listas')), F.getDocs(sub(fid, 'itens')),
+    F.getDocs(F.query(sub(fid, 'compras'), F.orderBy('data', 'desc'), F.limit(80))), F.getDocs(sub(fid, 'historico'))]);
+  return montar(fid, uid, c.data(), ...rs.map(r => r.docs));
+}
+
+/* ---------- gravar alterações (o Firestore cuida da fila offline) ---------- */
+let pend = 0;
 const ouvintes = new Set();
 export const aoMudarStatus = f => ouvintes.add(f);
-export function status() { return !navigator.onLine || falhou ? 'offline' : fila.length ? 'enviando' : 'ok'; }
-export const pendentes = () => fila.length;
-function gravar() { try { localStorage.setItem(CHAVE_FILA, JSON.stringify(fila)); } catch (e) {} ouvintes.forEach(f => f(status())); }
+export const status = () => !navigator.onLine ? 'offline' : pend ? 'enviando' : 'ok';
+export const pendentes = () => pend;
+const avisar = () => ouvintes.forEach(f => f(status()));
+addEventListener('online', avisar); addEventListener('offline', avisar);
+export async function enviar() {} // compatibilidade: o Firestore envia sozinho
 
-export function enfileirar(op) { fila.push(op); gravar(); enviar(); }
-const deRede = e => /fetch|network|Load failed|timeout|Failed/i.test(e?.message || '');
-export async function enviar() {
-  if (!ativo || enviando || !fila.length) return;
-  enviando = true;
+const TEMPOS = ['quando', 'criada', 'data', 'atualizado'];
+function converter(row) {
+  const o = {};
+  for (const [k, v] of Object.entries(row || {})) {
+    if (k === 'familia_id' || k === 'id') continue;
+    const chave = k === 'lista_id' ? 'listaId' : k;
+    o[chave] = TEMPOS.includes(k) && typeof v === 'string' ? Date.parse(v) : v === undefined ? null : v;
+  }
+  return o;
+}
+const idHist = c => String(c).replace(/[\/.#$\[\]]/g, '_').slice(0, 300) || '_';
+export function enfileirar(op) {
+  if (!db) return;
+  const fid = op.row?.familia_id || op.match?.familia_id || atual?.fid;
+  if (!fid) return;
+  let p;
   try {
-    while (fila.length) {
-      const op = fila[0], t = sb.from(op.tab);
-      const r = op.t === 'up' ? await t.upsert(op.row, op.on ? { onConflict: op.on } : undefined)
-        : op.t === 'upd' ? await t.update(op.row).match(op.match)
-        : op.t === 'delIn' ? await t.delete().in('id', op.ids)
-        : await t.delete().match(op.match);
-      if (r.error) { if (deRede(r.error)) throw r.error; console.warn('Mercato: alteração recusada pelo servidor', op, r.error); }
-      fila.shift(); falhou = false; gravar();
+    if (op.t === 'up') {
+      const id = op.tab === 'historico' ? idHist(op.row.chave) : op.row.id;
+      p = F.setDoc(F.doc(db, 'casas', fid, op.tab, id), converter(op.row), { merge: true });
+    } else if (op.t === 'upd') {
+      const id = op.tab === 'membros' ? op.match.user_id : op.match.id;
+      p = F.updateDoc(F.doc(db, 'casas', fid, op.tab, id), converter(op.row));
+    } else if (op.t === 'del') {
+      p = F.deleteDoc(F.doc(db, 'casas', fid, op.tab, op.match.id));
+    } else if (op.t === 'delIn') {
+      const b = F.writeBatch(db); op.ids.forEach(id => b.delete(F.doc(db, 'casas', fid, op.tab, id))); p = b.commit();
     }
-  } catch (e) { falhou = true; gravar(); setTimeout(enviar, 8000); }
-  finally { enviando = false; }
+  } catch (e) { console.warn('Mercato: não consegui gravar', op, e); return; }
+  pend++; avisar();
+  p.catch(e => console.warn('Mercato: alteração recusada', op, e)).finally(() => { pend--; avisar(); });
 }
 
 /* ---------- tempo real ---------- */
-let canal = null, timer = null, atual = null;
+let atual = null, offs = [], timer = null;
 export function conectar(fid, uid, aoAtualizar) {
-  desconectar(); atual = { fid, uid, aoAtualizar };
-  canal = sb.channel('casa-' + fid);
-  for (const t of ['itens', 'listas', 'compras', 'membros', 'historico']) canal.on('postgres_changes', { event: '*', schema: 'public', table: t, filter: `familia_id=eq.${fid}` }, agendar);
-  canal.on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'itens' }, agendar);
-  canal.on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'listas' }, agendar);
-  canal.on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'familias', filter: `id=eq.${fid}` }, agendar);
-  canal.subscribe();
+  desconectar();
+  atual = { fid, uid };
+  const vivo = {}, chaves = ['casa', 'membros', 'listas', 'itens', 'compras', 'historico'];
+  let ev = null, primeiraItens = true;
+  const emitir = () => {
+    if (!chaves.every(k => k in vivo)) return;
+    clearTimeout(timer);
+    timer = setTimeout(() => { const e = ev; ev = null; aoAtualizar(montar(fid, uid, vivo.casa, vivo.membros, vivo.listas, vivo.itens, vivo.compras, vivo.historico), e); }, 120);
+  };
+  const ouvir = (k, ref) => offs.push(F.onSnapshot(ref, s => {
+    if (k === 'casa') vivo.casa = s.data();
+    else {
+      vivo[k] = s.docs;
+      if (k === 'itens') {
+        if (!primeiraItens && !s.metadata.hasPendingWrites) {
+          const ch = s.docChanges().filter(c => c.type !== 'removed' && !c.doc.metadata.hasPendingWrites).pop();
+          if (ch) ev = { table: 'itens', eventType: ch.type === 'added' ? 'INSERT' : 'UPDATE', new: ch.doc.data() };
+        }
+        primeiraItens = false;
+      }
+    }
+    emitir();
+  }, e => console.warn('Mercato: tempo real', k, e)));
+  ouvir('casa', casaDoc(fid));
+  ouvir('membros', sub(fid, 'membros'));
+  ouvir('listas', sub(fid, 'listas'));
+  ouvir('itens', sub(fid, 'itens'));
+  ouvir('compras', F.query(sub(fid, 'compras'), F.orderBy('data', 'desc'), F.limit(80)));
+  ouvir('historico', sub(fid, 'historico'));
 }
-export function desconectar() { if (canal) sb.removeChannel(canal); canal = null; atual = null; }
-function agendar(ev) { clearTimeout(timer); timer = setTimeout(() => atualizarAgora(ev), 450); }
-export async function atualizarAgora(ev) {
-  if (!atual) return;
-  await enviar();
-  if (fila.length) return; // ainda há alterações locais para subir: não sobrescreve
-  try { const novo = await puxar(atual.fid, atual.uid); atual.aoAtualizar(novo, ev); } catch (e) {}
-}
-addEventListener('online', () => { falhou = false; gravar(); atualizarAgora(); });
-addEventListener('offline', () => gravar());
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizarAgora(); });
+export function desconectar() { offs.forEach(f => f()); offs = []; atual = null; clearTimeout(timer); }
