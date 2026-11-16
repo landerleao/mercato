@@ -1,5 +1,5 @@
 /* Mercato — funciona offline (no mercado o sinal costuma cair) */
-const VERSAO = 'mercato-v4';
+const VERSAO = 'mercato-v5';
 const BASE = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/store.js', 'js/catalogo.js', 'js/nuvem.js', 'js/config.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png'];
 

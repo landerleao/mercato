@@ -85,7 +85,7 @@ h1,h2,h3,.h{font-family:var(--head);letter-spacing:-.02em;font-weight:700}
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--gold) 55%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
 .a{animation:up .6s var(--ease) both;animation-delay:calc(var(--d,0) * 60ms)}
 .slide-l{animation:slideL .45s var(--ease) both}.slide-r{animation:slideR .45s var(--ease) both}
-@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
+/* As animações fazem parte da identidade do Mercato: ficam ativas mesmo com "Reduzir movimento" ligado no aparelho. */
 
 /* ---------- componentes ---------- */
 .card{background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow)}
