@@ -653,6 +653,8 @@ async function iniciar() {
   const qs = new URLSearchParams(location.search);
   const demo = qs.has('demo');                       // link de demonstração para o portfólio
   if (demo && !S.estado?.demo) S.carregarDemo();
+  // com a nuvem ligada, a demonstração é só para olhar: ao abrir o app de novo, volta para a tela de entrada
+  if (!demo && N.ativo && S.estado?.demo) S.sair();
   if (qs.get('tema') && S.estado) { S.estado.tema = qs.get('tema'); S.salvar(); }
   render();                                          // abre na hora com o que está salvo no aparelho
   if (!N.ativo || demo) return;
