@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mercato · Proposta de marca v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --bg:#0F172A; --bg2:#1E293B; --gold:#D4A762; --gold2:#B98A47; --gold3:#ECCB93; --cream:#F8F7F4; --gray:#94A3B8;
+  --line:rgba(255,255,255,.08); --brand:'Outfit',sans-serif; --head:'Plus Jakarta Sans',sans-serif; --text:'Inter',-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--cream);font-family:var(--text);-webkit-font-smoothing:antialiased;transition:background .4s}
+.wrap{max-width:1240px;margin:0 auto;padding:40px 24px 90px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.eyebrow{font:600 11px var(--head);letter-spacing:.22em;text-transform:uppercase;color:var(--gray)}
+.switch{display:flex;gap:8px;flex-wrap:wrap}
+.pal{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;font:600 12.5px var(--head);color:var(--cream);cursor:pointer;transition:.2s}
+.pal:hover{background:rgba(255,255,255,.08)}
+.pal.on{border-color:var(--gold);background:rgba(255,255,255,.08)}
+.dots{display:flex}.dots i{width:18px;height:18px;border-radius:50%;border:2px solid rgba(0,0,0,.35);margin-right:-6px}.dots i:last-child{margin-right:0}
+
+/* HERO BOARD */
+.board{position:relative;border-radius:32px;overflow:hidden;background:radial-gradient(120% 90% at 0% 0%,var(--bg2) 0%,var(--bg) 55%);border:1px solid var(--line);display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;padding:48px}
+.board:before,.board:after{content:"";position:absolute;border-radius:50%;filter:blur(2px);pointer-events:none}
+.board:before{width:720px;height:420px;right:-160px;bottom:-250px;background:linear-gradient(135deg,var(--gold3),var(--gold2));opacity:.9;transform:rotate(-12deg)}
+.board:after{width:520px;height:300px;right:-120px;top:-200px;background:linear-gradient(135deg,var(--gold),var(--gold2));opacity:.55;transform:rotate(18deg)}
+.left{position:relative;z-index:2}
+.brandmark{display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 0 28px;border-bottom:1px solid var(--line)}
+.wm{font-family:var(--brand);font-weight:500;letter-spacing:-.025em;line-height:1;color:var(--cream)}
+.tagline{font:500 12.5px var(--head);letter-spacing:.42em;text-transform:uppercase;color:var(--cream);opacity:.85;line-height:2;margin-top:16px}
+.icons{display:flex;gap:12px;justify-content:space-between;margin:26px 0 22px}
+.appic{width:76px;height:76px;border-radius:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}
+.sws{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center}
+.sws i{display:block;width:48px;height:48px;border-radius:50%;margin:0 auto 8px;border:1px solid rgba(255,255,255,.15);transition:background .4s}
+.sws b{display:block;font:600 10px var(--head);letter-spacing:.08em;text-transform:uppercase}
+.sws small{font-size:10.5px;color:var(--gray);font-family:ui-monospace,Menlo,monospace}
+.type{display:grid;grid-template-columns:1fr 1fr;margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
+.type div+div{border-left:1px solid var(--line);padding-left:22px}
+.type .aa{font-size:38px;line-height:1;margin:10px 0 6px}
+.type p{font-size:14px}.type small{color:var(--gray);font-size:12px}
+.feats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:24px;text-align:center}
+.feats i{font-size:26px;color:var(--gold)}
+.feats p{font-size:11.5px;margin-top:6px;line-height:1.35}
+
+.phones{position:relative;z-index:2;zoom:.78;display:flex;gap:22px;justify-content:center;align-items:flex-start;padding-top:10px}
+.phone{width:300px;height:640px;border-radius:50px;background:linear-gradient(145deg,#4a4a4f,#1b1b1e 40%,#3a3a3e);padding:10px;box-shadow:0 40px 70px -24px rgba(0,0,0,.75);flex-shrink:0}
+.phone:nth-child(2){margin-top:40px}.phone:nth-child(3){margin-top:80px}
+.scr{width:100%;height:100%;border-radius:41px;overflow:hidden;position:relative;display:flex;flex-direction:column;font-size:13px}
+.scr.dark{background:var(--bg);color:var(--cream)}
+.scr.light{background:var(--cream);color:#151B26}
+.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:92px;height:27px;background:#000;border-radius:20px;z-index:5}
+.sb{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 0;font:600 13px var(--text);height:44px}
+.sb span:last-child{display:flex;gap:5px;font-size:15px}
+.body{flex:1;padding:8px 18px 0;overflow:hidden;position:relative}
+.h{font-family:var(--head);font-weight:700;letter-spacing:-.02em}
+.muted{color:var(--gray)}
+
+/* splash */
+.splash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.splash:before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:var(--bg2);opacity:.7;top:-120px;left:-200px}
+.splash:after{content:"";position:absolute;width:380px;height:380px;border-radius:50%;background:var(--bg2);opacity:.45;bottom:-170px;right:-170px}
+.splash>*{position:relative;z-index:1}
+.btn{display:block;text-align:center;background:linear-gradient(180deg,var(--gold3),var(--gold));color:#1A1408;font:700 15px var(--head);padding:15px;border-radius:18px;box-shadow:0 12px 24px -10px var(--gold)}
+.ghost{text-align:center;font:600 14px var(--head);margin-top:16px}
+
+/* list light */
+.av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 13px var(--head);color:#fff;border:2px solid var(--cream)}
+.avs{display:flex}.avs .av+.av{margin-left:-12px}
+.pill{font:600 11px var(--head);padding:5px 10px;border-radius:999px;background:#ECE8E0;color:#4b4f5a}
+.add{display:flex;align-items:center;gap:10px;background:#EEEBE5;border-radius:14px;padding:12px 14px;margin:14px 0 6px;color:#6b7280;font-size:13.5px}
+.add i{font-size:18px}
+.grp{display:flex;align-items:center;gap:6px;font:700 10.5px var(--head);letter-spacing:.14em;text-transform:uppercase;color:#8a8f99;margin:14px 0 4px}
+.grp i{font-size:14px;color:var(--gold2)}
+.it{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ECE8E1;font-size:14.5px}
+.cb{width:24px;height:24px;border-radius:50%;border:2px solid #B9BEC8;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.it.ok .cb{background:#151B26;border-color:#151B26;color:#fff;font-size:13px}
+.it.ok span{text-decoration:line-through;color:#9aa0aa}
+.it>span:not(.cb){flex:1}.it small{color:#9aa0aa;font-size:12px}
+.fab{position:absolute;right:16px;bottom:14px;width:54px;height:54px;border-radius:50%;background:linear-gradient(180deg,var(--gold3),var(--gold));display:flex;align-items:center;justify-content:center;font-size:26px;color:#1A1408;box-shadow:0 12px 22px -8px var(--gold)}
+.tabbar{height:76px;display:flex;justify-content:space-around;padding-top:12px;border-top:1px solid}
+.light .tabbar{background:#fff;border-color:#ECE8E1}
+.dark .tabbar{background:var(--bg);border-color:var(--line)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font:500 10px var(--text);color:#8a8f99}
+.tab i{font-size:22px}.tab.on{color:var(--gold2)}.dark .tab.on{color:var(--gold)}
+
+/* walk dark */
+.prog{display:flex;gap:4px;margin-top:10px}.prog i{flex:1;height:4px;border-radius:4px;background:var(--bg2)}.prog i.d{background:var(--gold)}
+.navr{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.sq{width:36px;height:36px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:18px}
+.cat{display:flex;align-items:center;gap:14px;margin-top:18px}
+.cat .sq{width:58px;height:58px;border-radius:18px;font-size:30px;color:var(--gold);border:1px solid rgba(255,255,255,.06)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+.chip{background:var(--bg2);border-radius:18px;padding:12px;border:1.5px solid transparent;position:relative}
+.chip>i{font-size:26px;color:var(--gold)}
+.chip b{display:block;font:600 12.5px var(--head);margin-top:6px}
+.chip span{font-size:11px;color:var(--gray)}
+.chip.sel{border-color:var(--gold);background:linear-gradient(160deg,color-mix(in srgb,var(--gold) 16%,var(--bg2)),var(--bg2))}
+.chip .ck{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#1A1408;display:flex;align-items:center;justify-content:center;font-size:12px}
+.step{white-space:nowrap;display:inline-flex;align-items:center;gap:8px;margin-top:6px;background:rgba(0,0,0,.25);border-radius:999px;padding:2px 3px;font:700 11px var(--head)}
+.step i{width:18px;height:18px;border-radius:50%;background:var(--gold);color:#1A1408;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px}
+.share{margin-top:12px;background:var(--bg2);border-radius:18px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.share .av{width:30px;height:30px;font-size:11px;border-color:var(--bg2)}
+.foot{padding:12px 18px 22px}
+.next{background:linear-gradient(180deg,var(--gold3),var(--gold));color:#1A1408;border-radius:18px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;font:700 14px var(--head)}
+.next small{display:block;font:600 11px var(--head);opacity:.7}
+.next i{font-size:22px}
+
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:28px}
+.note{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:22px;padding:22px}
+.note h3{font:700 16px var(--head);margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.note h3 i{color:var(--gold);font-size:20px}
+.note p{color:var(--gray);font-size:13.5px;line-height:1.6}
+
+@media (max-width:1100px){.board{grid-template-columns:minmax(0,1fr);padding:32px 20px}.phones{flex-wrap:wrap;zoom:1}.phone:nth-child(n){margin-top:0}}
+@media (max-width:600px){.phones{zoom:.95}.board{padding:28px 16px}#bigLogo svg{width:130px;height:110px}.tagline{letter-spacing:.3em;font-size:11px}.wrap{padding:24px 16px 60px}.sws i{width:40px;height:40px}.appic{width:62px;height:62px}.feats{grid-template-columns:repeat(2,1fr);row-gap:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="eyebrow">Leão Design · Mercato · Proposta de marca v2</div>
+    <div class="switch" id="switch"></div>
+  </div>
+
+  <section class="board">
+    <div class="left">
+      <div class="brandmark">
+        <div id="bigLogo"></div>
+        <div class="wm" style="font-size:clamp(58px,17vw,86px);margin-top:6px">mercato</div>
+        <div class="tagline">Compras organizadas.<br>Vida mais leve.</div>
+      </div>
+      <div class="icons" id="appIcons"></div>
+      <div class="sws" id="sws"></div>
+      <div class="type">
+        <div><div class="eyebrow">Tipografia</div><div class="aa" style="font-family:var(--head);font-weight:700">Aa</div><p style="font-family:var(--head);font-weight:600">Plus Jakarta Sans</p><small>Títulos e interface</small></div>
+        <div><div class="eyebrow">&nbsp;</div><div class="aa" style="font-family:var(--text);font-weight:500">Aa</div><p>Inter</p><small>Textos e apoio</small></div>
+      </div>
+      <div class="feats">
+        <div><i class="ti ti-users"></i><p>Lista<br>compartilhada</p></div>
+        <div><i class="ti ti-bolt"></i><p>Tempo<br>real</p></div>
+        <div><i class="ti ti-route"></i><p>Passeio por<br>corredores</p></div>
+        <div><i class="ti ti-wifi-off"></i><p>Funciona<br>offline</p></div>
+      </div>
+    </div>
+    <div class="phones" id="phones"></div>
+  </section>
+
+  <div class="notes">
+    <div class="note"><h3><i class="ti ti-shopping-cart"></i>Logo redesenhada em vetor</h3><p>Mantive a ideia que você gostou: o carrinho cuja lateral vira um check. Redesenhei em vetor com traço único, cantos arredondados e dourado em degradê, pronto para ícone de app, favicon e impressão.</p></div>
+    <div class="note"><h3><i class="ti ti-palette"></i>Troque a paleta no topo</h3><p>A primeira é a original da sua referência (Carbono e Dourado). As outras mantêm o dourado da logo e mudam a base: azul-noite, café e esmeralda.</p></div>
+    <div class="note"><h3><i class="ti ti-sun-moon"></i>Tema claro e escuro</h3><p>O app segue o tema do celular: escuro elegante à noite e claro bege no mercado, onde a leitura sob luz forte é melhor. As duas versões aparecem nas telas.</p></div>
+  </div>
+</div>
+
+<script>
+const PALS={
+  carbono:{nome:'Carbono & Dourado',bg:'#0F172A',bg2:'#1E293B',gold:'#D4A762',gold2:'#B98A47',gold3:'#ECCB93',cream:'#F8F7F4',gray:'#94A3B8',n:['Carbono','Azul profundo','Dourado','Bege','Cinza']},
+  noite:{nome:'Azul-noite',bg:'#0B1630',bg2:'#16274A',gold:'#DDB06A',gold2:'#BF8E45',gold3:'#F1D29C',cream:'#F6F3EC',gray:'#8FA1C2',n:['Noite','Azul','Dourado','Marfim','Névoa']},
+  cafe:{nome:'Café & Champagne',bg:'#17120F',bg2:'#2A221C',gold:'#CFA76B',gold2:'#AD844A',gold3:'#E8CDA0',cream:'#F7F1E8',gray:'#A69888',n:['Café','Cacau','Champagne','Linho','Areia']},
+  esmeralda:{nome:'Esmeralda',bg:'#0B1C18',bg2:'#15302A',gold:'#D6AE6B',gold2:'#B38B47',gold3:'#EED3A0',cream:'#F5F3EC',gray:'#8EA69E',n:['Esmeralda','Musgo','Dourado','Pérola','Sálvia']}
+};
+let pal='carbono',uid=0;
+
+/* Logo: carrinho com check (vetor) */
+function logo(size,mode='gold'){
+  const id='g'+(uid++);
+  const stroke=mode==='gold'?`url(#${id})`:mode;
+  return `<svg width="${size}" height="${size*0.84}" viewBox="0 0 120 100" fill="none">
+   <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--gold3)"/><stop offset=".55" stop-color="var(--gold)"/><stop offset="1" stop-color="var(--gold2)"/></linearGradient></defs>
+   <g stroke="${stroke}" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M8 11h13l14.5 52H64L104 25H27"/>
+     <path d="M47 44l17 19"/>
+   </g>
+   <circle cx="43" cy="84" r="7.5" fill="${stroke}"/><circle cx="72" cy="84" r="7.5" fill="${stroke}"/></svg>`;
+}
+
+function applyPal(){
+  const p=PALS[pal],r=document.documentElement.style;
+  ['bg','bg2','gold','gold2','gold3','cream','gray'].forEach(k=>r.setProperty('--'+k,p[k]));
+  document.querySelectorAll('.pal').forEach(b=>b.classList.toggle('on',b.dataset.k===pal));
+  const cs=[p.bg,p.bg2,p.gold,p.cream,p.gray];
+  document.getElementById('sws').innerHTML=cs.map((c,i)=>`<div><i style="background:${c}"></i><b>${p.n[i]}</b><small>${c}</small></div>`).join('');
+}
+document.getElementById('switch').innerHTML=Object.entries(PALS).map(([k,p])=>`<button class="pal" data-k="${k}"><span class="dots"><i style="background:${p.bg}"></i><i style="background:${p.bg2}"></i><i style="background:${p.gold}"></i></span>${p.nome}</button>`).join('');
+document.querySelectorAll('.pal').forEach(b=>b.onclick=()=>{pal=b.dataset.k;applyPal()});
+
+document.getElementById('bigLogo').innerHTML=logo(170);
+document.getElementById('appIcons').innerHTML=[
+  ['linear-gradient(160deg,#1b1b1f,#050506)','gold'],
+  ['var(--cream)','var(--bg)'],
+  ['linear-gradient(160deg,var(--gold3),var(--gold2))','var(--bg)'],
+  ['var(--bg2)','var(--cream)']
+].map(([bg,m])=>`<div class="appic" style="background:${bg}">${logo(46,m)}</div>`).join('');
+
+const SB=`<div class="island"></div><div class="sb"><span>9:41</span><span><i class="ti ti-antenna-bars-5"></i><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>`;
+const AV=(l,c)=>`<div class="av" style="background:${c}">${l}</div>`;
+
+const splash=`<div class="phone"><div class="scr dark">${SB}
+  <div class="splash">${logo(120)}<div class="wm" style="font-size:52px;margin-top:8px">mercato</div>
+  <p style="text-align:center;font-size:15px;line-height:1.5;margin-top:14px;opacity:.85">Compras organizadas.<br>Vida mais leve.</p></div>
+  <div style="padding:0 22px 40px"><span class="btn">Começar</span><div class="ghost">Já tenho conta · Entrar</div></div></div></div>`;
+
+const lst=[['Hortifrúti','ti-salad',[['Tomate','1 kg',1],['Banana','1 dúzia',1],['Alface','',0]]],['Mercearia','ti-basket',[['Arroz','5 kg',1],['Café','500 g',0],['Azeite','',0]]],['Limpeza','ti-spray',[['Detergente','3 un',0]]]];
+const list=`<div class="phone"><div class="scr light">${SB}<div class="body">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+    <div style="display:flex;align-items:center;gap:10px"><div class="avs">${AV('A','#C9824A')}${AV('L','#3E5C8A')}</div><b class="h" style="font-size:14px">Nossa casa <i class="ti ti-chevron-down" style="font-size:13px"></i></b></div>
+    <i class="ti ti-bell" style="font-size:22px;position:relative"></i></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px"><div class="h" style="font-size:23px">Lista da semana</div><span class="pill">9 itens</span></div>
+  <div class="add"><i class="ti ti-plus"></i><span style="flex:1">Adicionar item…</span><i class="ti ti-microphone" style="color:var(--gold2)"></i></div>
+  ${lst.map(([g,ic,its])=>`<div class="grp"><i class="ti ${ic}"></i>${g}</div>`+its.map(([n,q,ok])=>`<div class="it ${ok?'ok':''}"><span class="cb">${ok?'<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.3l2.3 2.3 4.7-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</span><span>${n}</span><small>${q}</small></div>`).join('')).join('')}
+  <div class="fab"><i class="ti ti-plus"></i></div>
+  </div><div class="tabbar"><div class="tab on"><i class="ti ti-home"></i>Início</div><div class="tab"><i class="ti ti-route"></i>Passeio</div><div class="tab"><i class="ti ti-users"></i>Família</div><div class="tab"><i class="ti ti-user"></i>Perfil</div></div></div></div>`;
+
+const ch=[['ti-milk','Leite','2 L',1],['ti-cheese','Muçarela','300 g',1],['ti-egg','Ovos','1 dúzia',1],['ti-cup','Iogurte','',0],['ti-meat','Presunto','',0],['ti-bottle','Requeijão','',0]];
+const walk=`<div class="phone"><div class="scr dark">${SB}<div class="body">
+  <div class="navr"><div class="sq"><i class="ti ti-chevron-left"></i></div><b class="h" style="font-size:13px">Corredor 4 de 9</b><span class="muted" style="font-size:12px;font-weight:600">Pular</span></div>
+  <div class="prog">${[...Array(9)].map((_,i)=>`<i class="${i<4?'d':''}"></i>`).join('')}</div>
+  <div class="cat"><div class="sq"><i class="ti ti-cheese"></i></div><div><div class="h" style="font-size:21px">Frios e laticínios</div><div class="muted" style="font-size:12px;margin-top:3px">Toque no que está faltando</div></div></div>
+  <div class="grid2" style="margin-top:16px">${ch.map(([ic,n,q,s])=>`<div class="chip ${s?'sel':''}">${s?'<span class="ck"><i class="ti ti-check"></i></span>':''}<i class="ti ${ic}"></i><b>${n}</b>${s?`<div class="step"><i>−</i>${q}<i>+</i></div>`:'<span>Toque para incluir</span>'}</div>`).join('')}</div>
+  <div class="share"><div><div style="font:600 12px var(--head)">Compartilhada com</div><div class="muted" style="font-size:11px">Você e Lucas</div></div><div class="avs">${AV('A','#C9824A')}${AV('L','#3E5C8A')}</div></div>
+  </div><div class="foot"><div class="next"><div><small>3 itens neste corredor</small>Próximo: Mercearia</div><i class="ti ti-arrow-right"></i></div></div></div></div>`;
+
+document.getElementById('phones').innerHTML=splash+list+walk;
+applyPal();
+</script>
+</body>
+</html>

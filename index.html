@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mercato · Compras organizadas</title>
+<meta name="description" content="Mercato: lista de compras compartilhada com a família, organizada pelos setores do mercado.">
+<meta name="theme-color" content="#0F172A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mercato">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500&family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="css/app.css">
+<script>
+  try { var t = (JSON.parse(localStorage.getItem('mercato:v1')) || {}).tema; if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t; } catch (e) {}
+</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ECCB93"/><stop offset=".55" stop-color="#D4A762"/><stop offset="1" stop-color="#B98A47"/></linearGradient>
+</defs></svg>
+<div id="app"></div>
+<div id="sheet-root"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<noscript>O Mercato precisa de JavaScript para funcionar.</noscript>
+<script src="js/vendor/supabase-2.117.3.js"></script>
+<script type="module" src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
