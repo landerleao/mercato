@@ -29,7 +29,14 @@ https://SEU-ENDERECO/?demo
 - HTML, CSS e JavaScript puros (módulos ES), sem etapa de build
 - PWA: `manifest.webmanifest` + `sw.js` (offline)
 - Fontes: Plus Jakarta Sans, Inter e Outfit · ícones Tabler
-- Próxima etapa: Supabase (login por e-mail e senha, listas compartilhadas em tempo real, RLS por família)
+- Supabase: login por e-mail e senha, casa da família com convite, tempo real e RLS por família
+- Offline primeiro: tudo é salvo no aparelho e sincroniza quando a internet volta
+
+## Configurar a nuvem (Supabase)
+
+1. Crie um projeto no Supabase e rode `supabase/schema.sql` no SQL Editor (tabelas, RLS por família, funções e tempo real).
+2. Em `js/config.js`, preencha a URL do projeto e a chave **publishable**. Nunca use a chave secret/service_role no front.
+3. Sem configuração, o app funciona só no aparelho e no modo demonstração.
 
 ## Rodar localmente
 
@@ -46,6 +53,9 @@ index.html            casca do app
 css/app.css           identidade visual, temas e animações
 js/app.js             telas e navegação
 js/store.js           dados (salvos no aparelho)
+js/nuvem.js           Supabase: conta, casa, fila offline e tempo real
+js/config.js          URL e chave publishable do Supabase
+supabase/schema.sql   banco de dados
 js/catalogo.js        setores, itens e leitura de texto/voz
 icons/                logo e ícones do app
 marca/                proposta de marca
